@@ -1,3 +1,4 @@
+import 'package:album_image/album_image.dart';
 import 'package:album_image/src/controller/gallery_provider.dart';
 import 'package:album_image/src/widgets/thumbnail_path.dart';
 import 'package:flutter/material.dart';
@@ -30,11 +31,22 @@ class AppBarAlbum extends StatelessWidget {
   ///appBar actions widgets
   final List<Widget>? appBarActionWidgets;
 
+  ///onPressed Action Widgets.
+  final ValueChanged<List<AssetEntity>> onDone;
+
   final double height;
 
   final bool centerTitle;
 
   final Widget? emptyAlbumThumbnail;
+
+  final String? trailingText;
+
+  final TextStyle trailingTextStyle;
+
+  final AlbumPickerDropdownStyle albumPickerDropdownStyle;
+
+  final bool isSingle;
 
   const AppBarAlbum(
       {Key? key,
@@ -43,15 +55,24 @@ class AppBarAlbum extends StatelessWidget {
       required this.albumBackGroundColor,
       required this.albumDividerColor,
       this.albumHeaderTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 18),
-      this.albumTextStyle = const TextStyle(color: Colors.white, fontSize: 18),
+          const TextStyle(color: Colors.black, fontSize: 18),
+      this.albumTextStyle = const TextStyle(color: Colors.black, fontSize: 18),
       this.albumSubTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 14),
+          const TextStyle(color: Colors.black, fontSize: 14),
       this.height = 65,
       this.centerTitle = true,
       this.appBarLeadingWidget,
       this.appBarActionWidgets,
-      this.emptyAlbumThumbnail})
+      required this.onDone,
+      this.emptyAlbumThumbnail,
+      this.trailingText = "Done",
+      this.trailingTextStyle = const TextStyle(
+        color: Colors.black,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
+      this.albumPickerDropdownStyle = const AlbumPickerDropdownStyle(),
+      required this.isSingle})
       : super(key: key);
 
   @override
@@ -63,7 +84,7 @@ class AppBarAlbum extends StatelessWidget {
         leading: appBarLeadingWidget,
         toolbarHeight: height,
         backgroundColor: appBarColor,
-        actions: appBarActionWidgets,
+        actions: [_buildActionButton(context)],
         title: _buildAlbumButton(context, ValueNotifier(false)),
         centerTitle: centerTitle,
       ),
@@ -93,7 +114,9 @@ class AppBarAlbum extends StatelessWidget {
         child: Container(
           decoration: decoration,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            textBaseline: TextBaseline.alphabetic,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
@@ -102,7 +125,7 @@ class AppBarAlbum extends StatelessWidget {
                 style: albumHeaderTextStyle,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 4),
+                padding: const EdgeInsets.only(left: 4, top: 4),
                 child: AnimatedBuilder(
                   animation: arrowDownNotifier,
                   builder: (BuildContext context, child) {
@@ -113,8 +136,8 @@ class AppBarAlbum extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.keyboard_arrow_down,
-                    color: albumHeaderTextStyle.color!,
-                    size: albumHeaderTextStyle.fontSize! * 1.5,
+                    color: albumPickerDropdownStyle.color,
+                    size: albumPickerDropdownStyle.size,
                   ),
                 ),
               ),
@@ -123,6 +146,38 @@ class AppBarAlbum extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Widget _buildActionButton(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: provider.pickedNotifier,
+        builder: (_, value, __) => TextButton(
+              key: const Key('button'),
+              onPressed: provider.picked.isNotEmpty
+                  ? () {
+                      onDone(provider.picked);
+                    }
+                  : () => Navigator.pop(context),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                // shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text: trailingText,
+                      style: trailingTextStyle,
+                      children: isSingle
+                          ? []
+                          : [TextSpan(text: ' (${provider.picked.length})')],
+                    ),
+                  ),
+                ],
+              ),
+            ));
   }
 
   void onSelectAlbum(BuildContext context) {
@@ -220,6 +275,7 @@ class _ChangePathWidgetState extends State<ChangePathWidget> {
             ),
             Expanded(
               child: ListView.separated(
+                physics: const ClampingScrollPhysics(),
                 controller: controller,
                 itemCount: provider.pathList.length,
                 itemBuilder: _buildItem,
@@ -239,67 +295,66 @@ class _ChangePathWidgetState extends State<ChangePathWidget> {
   Widget _buildItem(BuildContext context, int index) {
     final item = provider.pathList[index];
 
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        widget.close.call(item);
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            FutureBuilder<int>(
-                future: item.assetCountAsync,
-                builder: (context, snapshot) {
-                  if (snapshot.data != null && snapshot.data! > 0) {
-                    return ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image(
-                          image: ThumbnailPath(item, thumbSize: 100),
-                          fit: BoxFit.cover,
-                          width: widget.itemHeight,
-                          height: widget.itemHeight,
-                        ));
-                  }
-                  return SizedBox(
-                    width: widget.itemHeight,
-                    height: widget.itemHeight,
-                    child: widget.emptyAlbumThumbnail,
-                  );
-                }),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: widget.albumTextStyle ??
-                          const TextStyle(color: Colors.white, fontSize: 18),
+    return FutureBuilder<int>(
+      future: item.assetCountAsync,
+      builder: (context, snapshot) {
+        if (snapshot.data != null && snapshot.data! > 0) {
+          return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              widget.close.call(item);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image(
+                        image: ThumbnailPath(item, thumbSize: 100),
+                        fit: BoxFit.cover,
+                        width: widget.itemHeight,
+                        height: widget.itemHeight,
+                      )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: widget.albumTextStyle ??
+                                const TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          Text(
+                            snapshot.data.toString(),
+                            overflow: TextOverflow.ellipsis,
+                            style: widget.albumSubTextStyle ??
+                                const TextStyle(
+                                    color: Colors.white, fontSize: 14),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Text(
-                      '${item.assetCount}',
-                      overflow: TextOverflow.ellipsis,
-                      style: widget.albumSubTextStyle ??
-                          const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ],
-                ),
+                  ),
+                  AnimatedOpacity(
+                    opacity: currentIndex == index ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(Icons.check),
+                  )
+                ],
               ),
             ),
-            AnimatedOpacity(
-              opacity: currentIndex == index ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(Icons.check),
-            )
-          ],
-        ),
-      ),
+          );
+        }
+        return const SizedBox();
+      },
     );
   }
 }
