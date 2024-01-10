@@ -5,13 +5,13 @@ homepage: https://github.com/phuongtinhbien/album_image.git
 repository: https://github.com/phuongtinhbien/album_image.git
 
 environment:
-  sdk: ">=2.16.2 <3.0.0"
-  flutter: ">=2.5.0"
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  photo_manager: ^2.5.2
+  photo_manager: ^2.7.1
 
 dev_dependencies:
   flutter_test:
