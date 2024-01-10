@@ -1,4 +1,5 @@
 import 'package:album_image/src/controller/gallery_provider.dart';
+import 'package:album_image/src/customization/album_picker_style.dart';
 import 'package:album_image/src/widgets/app_bar_album.dart';
 import 'package:album_image/src/widgets/gallery_grid_view.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,9 @@ typedef SelectionWidgetBuilder = Widget Function(
     BuildContext context, bool selected, int index);
 
 class AlbumImagePicker extends StatefulWidget {
+  /// album picker style
+  final AlbumPickerStyle albumPickerStyle;
+
   /// maximum images allowed (default 1)
   final int maxSelection;
 
@@ -50,18 +54,6 @@ class AlbumImagePicker extends StatefulWidget {
   /// gridView controller
   final ScrollController? scrollController;
 
-  /// gridView background color
-  final Color listBackgroundColor;
-
-  /// grid image backGround color
-  final Color itemBackgroundColor;
-
-  /// grid selected image backGround color
-  final Color selectedItemBackgroundColor;
-
-  /// dropdown appbar color
-  final Color appBarColor;
-
   ///Icon widget builder
   ///index = -1, not selected yet
   final SelectionWidgetBuilder? selectionBuilder;
@@ -72,34 +64,17 @@ class AlbumImagePicker extends StatefulWidget {
   ///appBar actions widgets
   final List<Widget>? appBarActionWidgets;
 
-  /// album header text color
-  final TextStyle albumHeaderTextStyle;
-
-  /// album text color
-  final TextStyle albumTextStyle;
-
-  /// album sub text color
-  final TextStyle albumSubTextStyle;
-
-  /// album text color
-  final double appBarHeight;
-
-  /// album background color
-  final Color albumBackGroundColor;
-
-  /// album divider color
-  final Color albumDividerColor;
-
-  ///
   final ValueChanged<List<AssetEntity>> onDone;
 
   final bool centerTitle;
 
   final Widget? emptyAlbumThumbnail;
 
+  final String? trailingText;
 
   const AlbumImagePicker(
       {Key? key,
+      this.albumPickerStyle = const AlbumPickerStyle(),
       this.maxSelection = 1,
       this.onSelected,
       this.selected,
@@ -109,18 +84,6 @@ class AlbumImagePicker extends StatefulWidget {
       this.childAspectRatio = 1.0,
       this.thumbnailQuality = 200,
       this.gridPadding = EdgeInsets.zero,
-      this.listBackgroundColor = Colors.white,
-      this.itemBackgroundColor = Colors.grey,
-      this.selectedItemBackgroundColor = Colors.grey,
-      this.appBarColor = Colors.redAccent,
-      this.albumTextStyle = const TextStyle(color: Colors.white, fontSize: 18),
-      this.albumHeaderTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 18),
-      this.albumSubTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 14),
-      this.appBarHeight = 45,
-      this.albumBackGroundColor = const Color(0xFF333333),
-      this.albumDividerColor = const Color(0xFF484848),
       this.centerTitle = true,
       this.appBarActionWidgets,
       this.closeWidget,
@@ -129,7 +92,8 @@ class AlbumImagePicker extends StatefulWidget {
       this.scrollController,
       this.onSelectedMax,
       required this.onDone,
-      this.emptyAlbumThumbnail})
+      this.emptyAlbumThumbnail,
+      this.trailingText = "Done"})
       : super(key: key);
 
   @override
@@ -170,7 +134,8 @@ class _AlbumImagePickerState extends State<AlbumImagePicker>
     var result = await PhotoManager.requestPermissionExtend(
         requestOption: const PermissionRequestOption(
             iosAccessLevel: IosAccessLevel.readWrite));
-    if (result == PermissionState.authorized || result == PermissionState.limited) {
+    if (result == PermissionState.authorized ||
+        result == PermissionState.limited) {
       PhotoManager.startChangeNotify();
       PhotoManager.addChangeCallback((value) {
         _refreshPathList();
@@ -217,18 +182,23 @@ class _AlbumImagePickerState extends State<AlbumImagePicker>
         /// album drop down
         AppBarAlbum(
           provider: provider,
-          albumDividerColor: widget.albumDividerColor,
-          albumBackGroundColor: widget.albumBackGroundColor,
-          appBarColor: widget.appBarColor,
-          albumTextStyle: widget.albumTextStyle,
-          albumHeaderTextStyle: widget.albumHeaderTextStyle,
-          albumSubTextStyle: widget.albumSubTextStyle,
-          height: widget.appBarHeight,
+          albumDividerColor: widget.albumPickerStyle.albumDividerColor,
+          albumBackGroundColor: widget.albumPickerStyle.albumBackGroundColor,
+          appBarColor: widget.albumPickerStyle.appBarColor,
+          albumTextStyle: widget.albumPickerStyle.albumTextStyle,
+          albumHeaderTextStyle: widget.albumPickerStyle.albumHeaderTextStyle,
+          albumSubTextStyle: widget.albumPickerStyle.albumSubTextStyle,
+          height: widget.albumPickerStyle.appBarHeight,
           appBarLeadingWidget: widget.closeWidget,
           appBarActionWidgets: widget.appBarActionWidgets,
           onDone: widget.onDone,
           centerTitle: widget.centerTitle,
           emptyAlbumThumbnail: widget.emptyAlbumThumbnail,
+          trailingText: widget.trailingText,
+          trailingTextStyle: widget.albumPickerStyle.trailingTextStyle,
+          albumPickerDropdownStyle:
+              widget.albumPickerStyle.albumPickerDropdownStyle,
+          isSingle: widget.maxSelection == 1,
         ),
 
         /// grid image view
@@ -243,15 +213,18 @@ class _AlbumImagePickerState extends State<AlbumImagePicker>
                     padding: widget.gridPadding,
                     childAspectRatio: widget.childAspectRatio,
                     crossAxisCount: widget.crossAxisCount,
-                    gridViewBackgroundColor: widget.listBackgroundColor,
+                    gridViewBackgroundColor:
+                        widget.albumPickerStyle.listBackgroundColor,
                     gridViewController: widget.scrollController,
                     gridViewPhysics: widget.scrollPhysics,
-                    imageBackgroundColor: widget.itemBackgroundColor,
-                    selectedBackgroundColor: widget.selectedItemBackgroundColor,
+                    imageBackgroundColor:
+                        widget.albumPickerStyle.itemBackgroundColor,
+                    selectedBackgroundColor:
+                        widget.albumPickerStyle.selectedItemBackgroundColor,
                     selectionBuilder: widget.selectionBuilder,
                     thumbnailBoxFix: widget.thumbnailBoxFix,
                     selectedCheckBackgroundColor:
-                        widget.selectedItemBackgroundColor,
+                        widget.albumPickerStyle.selectedItemBackgroundColor,
                     onAssetItemClick: (ctx, asset, index) async {
                       provider.pickEntity(asset);
                       // widget.onSelected(provider.picked);

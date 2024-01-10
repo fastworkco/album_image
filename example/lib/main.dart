@@ -40,15 +40,18 @@ class _MyAppState extends State<MyApp> {
               print('Reach max');
             },
             centerTitle: true,
-            albumHeaderTextStyle:
-                const TextStyle(color: Colors.black, fontSize: 14),
-            albumBackGroundColor: Colors.white,
-            appBarHeight: 45,
-            itemBackgroundColor: Colors.grey[100]!,
-            appBarColor: Colors.white,
-            albumTextStyle: const TextStyle(color: Colors.black, fontSize: 14),
-            albumSubTextStyle:
-                const TextStyle(color: Colors.grey, fontSize: 10),
+            albumPickerStyle: AlbumPickerStyle(
+              albumHeaderTextStyle:
+                  const TextStyle(color: Colors.black, fontSize: 14),
+              albumBackGroundColor: Colors.white,
+              appBarHeight: 45,
+              itemBackgroundColor: Colors.grey[100]!,
+              appBarColor: Colors.white,
+              albumTextStyle:
+                  const TextStyle(color: Colors.black, fontSize: 14),
+              albumSubTextStyle:
+                  const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
             type: AlbumType.image,
             closeWidget: const BackButton(
               color: Colors.black,
