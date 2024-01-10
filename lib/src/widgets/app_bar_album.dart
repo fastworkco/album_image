@@ -153,11 +153,7 @@ class AppBarAlbum extends StatelessWidget {
         valueListenable: provider.pickedNotifier,
         builder: (_, value, __) => TextButton(
               key: const Key('button'),
-              onPressed: provider.picked.isNotEmpty
-                  ? () {
-                      onDone(provider.picked);
-                    }
-                  : () => Navigator.pop(context),
+              onPressed: () => onDone(provider.picked),
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Colors.transparent),
                 // shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))),
