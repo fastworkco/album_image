@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
               albumSubTextStyle:
                   const TextStyle(color: Colors.grey, fontSize: 10),
             ),
-            type: AlbumType.image,
+            type: AlbumPickerType.image,
             closeWidget: const BackButton(
               color: Colors.black,
             ),
