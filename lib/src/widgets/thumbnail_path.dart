@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class ThumbnailPath extends ImageProvider<ThumbnailPath> {
@@ -17,14 +17,16 @@ class ThumbnailPath extends ImageProvider<ThumbnailPath> {
   });
 
   @override
-  ImageStreamCompleter load(ThumbnailPath key, DecoderCallback decode) {
+  ImageStreamCompleter loadImage(
+      ThumbnailPath key, ImageDecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(key, decode),
       scale: key.scale,
     );
   }
 
-  Future<ui.Codec> _loadAsync(ThumbnailPath key, DecoderCallback decode) async {
+  Future<ui.Codec> _loadAsync(
+      ThumbnailPath key, ImageDecoderCallback decode) async {
     assert(key == this);
 
     final coverEntity =
@@ -33,8 +35,11 @@ class ThumbnailPath extends ImageProvider<ThumbnailPath> {
 
     final bytes = await coverEntity
         .thumbnailDataWithSize(ThumbnailSize(thumbSize, thumbSize));
-
-    return decode(bytes!);
+    if (bytes == null) {
+      throw StateError('The data of the entity is null: $entity');
+    }
+    final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+    return decode(buffer);
   }
 
   @override

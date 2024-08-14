@@ -2,7 +2,6 @@ import 'package:album_image/album_image.dart';
 import 'package:album_image/src/controller/gallery_provider.dart';
 import 'package:album_image/src/widgets/thumbnail_path.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 class AppBarAlbum extends StatelessWidget {
   /// picker provider
