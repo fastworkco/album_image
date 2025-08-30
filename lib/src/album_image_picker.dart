@@ -28,7 +28,7 @@ class AlbumImagePicker extends StatefulWidget {
   ///  * [all] - Request paths that return images and videos.
   ///  * [image] - Request paths that only return images.
   ///  * [video] - Request paths that only return videos.
-  final AlbumType type;
+  final AlbumPickerType type;
 
   /// image quality thumbnail
   final int thumbnailQuality;
@@ -78,7 +78,7 @@ class AlbumImagePicker extends StatefulWidget {
       this.maxSelection = 1,
       this.onSelected,
       this.selected,
-      this.type = AlbumType.all,
+      this.type = AlbumPickerType.all,
       this.thumbnailBoxFix = BoxFit.cover,
       this.crossAxisCount = 3,
       this.childAspectRatio = 1.0,
@@ -152,13 +152,13 @@ class _AlbumImagePickerState extends State<AlbumImagePicker>
   void _refreshPathList() {
     late RequestType type;
     switch (widget.type) {
-      case AlbumType.all:
+      case AlbumPickerType.all:
         type = RequestType.common;
         break;
-      case AlbumType.image:
+      case AlbumPickerType.image:
         type = RequestType.image;
         break;
-      case AlbumType.video:
+      case AlbumPickerType.video:
         type = RequestType.video;
         break;
     }
